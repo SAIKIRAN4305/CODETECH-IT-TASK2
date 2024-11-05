@@ -1,0 +1,71 @@
+# Import necessary libraries
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, LabelEncoder, OneHotEncoder
+from sklearn.impute import SimpleImputer
+from sklearn.compose import ColumnTransformer
+
+# Sample data loading (replace 'data.csv' with your dataset)
+# Assuming 'data.csv' has columns: ['Feature1', 'Feature2', 'Feature3', 'Target']
+df = pd.read_csv('data.csv')
+
+# Display the first few rows of the dataset
+print("Original Dataset:")
+print(df.head())
+
+### 1. Data Cleaning ###
+
+# Handle missing values
+# Replace missing values in numerical columns with the mean, and in categorical columns with the mode
+numerical_features = df.select_dtypes(include=['int64', 'float64']).columns
+categorical_features = df.select_dtypes(include=['object']).columns
+
+# Imputers for handling missing values
+num_imputer = SimpleImputer(strategy='mean')
+cat_imputer = SimpleImputer(strategy='most_frequent')
+
+df[numerical_features] = num_imputer.fit_transform(df[numerical_features])
+df[categorical_features] = cat_imputer.fit_transform(df[categorical_features])
+
+print("\nDataset after handling missing values:")
+print(df.head())
+
+### 2. Data Transformation ###
+
+# Encoding categorical variables
+# Using OneHotEncoding for nominal categorical variables and LabelEncoding for ordinal if needed
+df_encoded = pd.get_dummies(df, columns=categorical_features, drop_first=True)
+
+print("\nDataset after encoding categorical variables:")
+print(df_encoded.head())
+
+# Feature scaling (for numerical features only)
+scaler = StandardScaler()
+df_encoded[numerical_features] = scaler.fit_transform(df_encoded[numerical_features])
+
+print("\nDataset after scaling numerical features:")
+print(df_encoded.head())
+
+### 3. Data Splitting ###
+
+# Separate features and target variable
+X = df_encoded.drop('Target', axis=1)  # Replace 'Target' with the actual target column name
+y = df_encoded['Target']
+
+# Split data into training and testing sets (80-20 split)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+print("\nTraining set:")
+print(X_train.head())
+print("\nTesting set:")
+print(X_test.head())
+
+### Data is now ready for model training ###
+# Here, you would typically go on to train an AI model with X_train and y_train.
+# For example:
+# model = YourModelClass()
+# model.fit(X_train, y_train)
+
+# Summary
+print("\nData processing completed. The data is ready for training.")
